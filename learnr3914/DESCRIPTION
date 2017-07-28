@@ -1,0 +1,15 @@
+Package: learnr3914
+Type: Package
+Title: For teaching STAT3914
+Version: 0.1.0
+Author: Kevin Y. X. Wang
+Maintainer: Kevin Y. X. Wang <kevin.wang@sydney.edu.au>
+Description: I worte this package to check if learnr tutorial can be shared to students. This was confirmed in the affirmative. 
+License: Do not distribute outside of the University of Sydney.
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    ggplot2,
+    learnr,
+    gapminder
