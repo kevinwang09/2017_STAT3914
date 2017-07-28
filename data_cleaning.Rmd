@@ -1,0 +1,693 @@
+---
+title: "Data exploration using `tidyverse`"
+author: "Kevin Wang"
+date: "7 June 2017"
+output:
+  ioslides_presentation:
+    fig_height: 7
+    fig_width: 7
+    incremental: yes
+    self_contained: yes
+    widescreen: yes
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(comment=NA, warning=FALSE, message=FALSE)
+library(tidyverse)
+
+options(tibble.print_max = 10, tibble.print_min = 5)
+# library(visNetwork)
+```
+
+<style>
+slides > slide { overflow: scroll; }
+slides > slide:not(.nobackground):after {
+  content: '';
+}
+</style>
+
+# S0: Prior to lecture
+
+
+```{r constructDirtyIris, eval = F, echo = F}
+set.seed(10)
+dirtyIris = as.tbl(iris)
+dirtyIris = dirtyIris %>% 
+  add_row(Sepal.Length = sample(c(rnorm(1),NA), 100,replace = T), 
+          Sepal.Width = rep(NA, 100),
+          Petal.Length = rep(NA, 100),
+          Petal.Width = rep(NA, 100),
+          Species = rep(NA, 100)) %>% 
+  cbind(allEmpty = NA) %>% 
+  sample_n(size = nrow(.))
+
+colnames(dirtyIris)[1:5] = c("SepAl....LeNgth", "Sepal.?    Width", "petal.Length(*&^",
+                        "petal.$#^&Width", "SPECIES^")
+
+dirtyIris
+
+write_csv(dirtyIris, path = "dirtyIris.csv")
+```
+
+
+## Preparing for this lecture {.build}
+
++ All materials are on https://github.com/kevinwang09/SUMS_2017_R_workshop.
+
++ Go and download this file 
+(https://github.com/kevinwang09/SUMS_2017_R_workshop/raw/master/dirty_data.xlsx)
+
++ Familiar yourself with the `iris` dataset. Typing `iris` into `R` console should load this data. Pay attention to its column, row names and structure of each column. 
+
++ Please run these codes on your laptop prior to the lecture. 
+
+```{r, eval = F}
+install.packages("tidyverse") ## Might be a while...
+install.packages("janitor")
+install.packages("plotly")
+```
+
+
+#####################################################
+# S1: Necessary evils of Applied Statistics
+## Good statistical discoveries don't fall out from the sky {.build}
+
++ Statisticians are great at many things:
+
+    1.  Understanding data characteristics
+    1.  Building statistical/mathematical models
+    1.  Repeat 1 and 2...like...a lot...
+    1.  Extract insights
+
++ But the mother of all these, i.e. **preparing data** is not trivial. (e.g. STAT2xxx lab exams)
+
+## Let $\boldsymbol{X}$ be the thing I want... {.build}
+
++ The real problem is not applying fancy shampoo for your cat. It is getting your cat into the bathtub. 
+
+<!-- <center> <img src="catBeforeAfter.jpg"   width="500"/> </center> -->
+
+
+<center> <img src="grumpy_cat.png" width="700" /> </center>
+
++ Be alarmed! 
+
+## Hidden side of being a statistician {.build}
+
+<center> <img src="data-science-explore.png" width="600" /> </center>
+
++ Assume we have data
++ Assume we have cleaned data
++ Assume we can reveal aspects of the data
++ Assume we can perform statistics on the data
++ Assume we interrogated the right aspects of the data
++ Assume we did everything right, communicate insights to others
+
+<!-- + 20% of time on downloading, reading, cleaning and integrating data -->
+<!-- + 50% of time on exploring and thinking about data characteristics  -->
+<!-- + 20% of time on decide which statistical tools to use and learn those -->
+<!-- + 10% of time on applying the statistical tools -->
+<!-- + (10% of time on tidying your code if they are messy) -->
+
+
+<!-- + This lecture is about: -->
+
+<!--   1.    Loading your data -->
+<!--   2.    Understanding your data -->
+<!--   3.    Exploring your data -->
+<!--   4.    Reproducible workflow -->
+  
+
+
+<!-- ## Reproducibility and coding  {.build} -->
+
+<!-- + Ad-hoc codings are fine. But can you recall and **reproduce** what you did 6 months ago? Without doing entire data-cleaning-modelling pipeline again?  -->
+
+<!-- + It took me overnight to run `for`-loops in Honours. And it crashed in the morning of the submission day.  -->
+
+<!-- <center> <img src="MS_messy.png" height="300" /> </center> -->
+
+
+## Summary of this lecture {.build}
+
++ Powerful tools to organise your data so you can focus the statistics. 
+
++ Passive learning is not going to work.
+
+<center> <img src="dirtyIris_screenshot.png" width="700" /> </center>
+
+
++ S1: Introduction
++ S2: Reading in data using `readr` and `readxl`
++ S3: Basic data cleaning using `janitor`
++ S4: Clean coding using `magrittr`
++ S5: Data filtering using `dplyr`
++ S6: Data visualisation using `ggplot2`
++ S7: A glimpse into the future of `R`: `tidyverse`
++ S8: Conclusion
+
+
+#####################################################
+# S2: Reading data
+## Better read/write data {.build}
+
++ `base` R functions haven't adapted to the needs of modern users.
+
++ `readr` functions are superior in data import warnings, column type handling, speed, scalability and consistency.
+
+```{r loading readr}
+library(readr)
+```
+
+## Reading data using *readr* {.build}
+
+
+```{r read_csv}
+dirtyIris = read_csv("dirtyIris.csv")
+class(dirtyIris)
+dirtyIris
+```
+
+<center> <img src="https://s-media-cache-ak0.pinimg.com/236x/4f/2b/f2/4f2bf25a55c4db0ed8271fbede89f159.jpg" width="200" height="200" /> </center>
+
++ `tibble` is a more advanced version of `data.frame`. 
+
++ `readxl` and `haven` (for SAS, SPSS etc.) packages work similarly. 
+
++ We now proceed to data cleaning on the `dirtyIris` dataset. 
+
+
+<!-- ## Reading data using *readxl* {.build} -->
+
+<!-- + `readxl` package can read `.xlsx` files very well. Though it sounds trivial, this was quite difficult to get right due to the JavaScript coding inside `.xlsx`. -->
+
+<!-- + https://github.com/kevinwang09/SUMS_2017_R_workshop/raw/master/dirty_data.xlsx -->
+
+
+
+<!-- ```{r readxl} -->
+<!-- library(readxl) -->
+<!-- dirty = read_excel("dirty_data.xlsx") -->
+<!-- dirty ## The data is a bit too large to see. -->
+<!-- ## We will use a basic spreadsheet to view this data. -->
+
+<!-- DT::datatable(dirty) -->
+
+<!-- # rm(dirty) ## We won't focus on this data for the rest of this lecture. -->
+<!-- ``` -->
+
+
+
+
+
+
+
+# S3: Cleaned data
+## What is clean data? {.build}
+
+**clean data as a data set that allows you to do statistical modelling without extra processing**
+
+  1.  Good documentation on the entire data.
+  1.  Each column is a **variable**. The name should be intuitive, and:
+    - No bad characters [\@KevinWang009](https://twitter.com/KevinWang009)
+    - No inconsistent capitalisation (`first name` vs `First Name`)
+    - No inconsistent separators (`cricket_australia` vs `cricket.australia`)
+  1.  Each row is an **observation**:
+    - No bad characters
+    - No poorly designed row names (1, 2, 5, ... )
+    - No repeated row names (a, a.1, b, ... )
+  1.  Each column should be imported according to their most appropriate type.
+    - e.g. Months should be read in as `character` or `Date`, not a `factor` ordered alphabetically (default in `R`).
+
+
+## Data cleaning in base *R*
+
++ Clean data is a well-designed `data.frame`.
+
++ `base` R functions might struggle with all issues we mentioned. 
+
++ Basic data cleaning using `janitor` package.
+
++ More advanced data manipulation through `dplyr`.
+
+
+## *janitor*: basic data cleaning {.build}
+
++ Clean up the bad column names
+
+```{r janitor1}
+library(janitor)
+dirtyIris
+## Clean up column names
+better = clean_names(dirtyIris) 
+better
+```
+
+
+```{r janitor2}
+## Removing empty rows/columns
+evenBetter = remove_empty_cols(better)
+evenBetter = remove_empty_rows(evenBetter)
+
+evenBetter
+head(iris)
+```
+
+
+```{r janitor3}
+## Similar to na.omit(), any rows with NA will be removed. 
+evenBetterBetter = remove_missing(evenBetter) 
+
+glimpse(evenBetterBetter)
+
+
+cleanIris = evenBetterBetter
+```
+
+This is the original `iris` data:
+```{r janitor4}
+glimpse(iris)
+```
+
+
+
+
+<!-- ## *janitor* also has some good tabulate functions (optional) {.build} -->
+
+<!-- ```{r janitor3} -->
+<!-- ## Equivalent to: -->
+<!-- # table(evenBetter$employee_status) -->
+<!-- # prop.table(table(evenBetter$employee_status)) -->
+
+<!-- tabyl(evenBetter$employee_status) -->
+
+
+<!-- ## Equivalent to: -->
+<!-- # with(evenBetter, -->
+<!-- #      table(employee_status, full_time)) -->
+
+<!-- crosstab(.data = evenBetter, -->
+<!--          employee_status, full_time) -->
+<!-- ``` -->
+
+
+
+
+
+
+#########################################
+# S4: Clean coding (Skim through)
+## Coding complexity increases with the number of brackets {.build}
+
++ The "inside out" structure of coding isn't great for human reading.
+
+```{r nestedBrackets}
+mean(cleanIris$sepal_length)
+plot(density(cleanIris$sepal_length), col = "red", lwd = 2)
+```
+
+
+## Piping allows you to read code from left to right  {.build}
+
++ We introduce a new notation: " x %>% f " means "f(x)". We call this operation as "x pipe f".
+
++ Reading codes from left to right. And compounded operations are possible.
+
++ Keyboard shortcut is Cmd+shift+M.
+
+```{r piping}
+cleanIris$sepal_length %>% mean
+
+cleanIris$sepal_length %>%
+  density %>%
+  plot(col = "red", lwd = 2)
+```
+
+
+
+
+
+
+
+
+
+
+
+# S5: *dplyr*: data subsetting master
+## Traditional way of subsetting data in R (optional) {.build}
+
++ If I want the first two rows of column `sepal_length` and `sepal_width` in the `cleanIris` data:
+
+```{r basicSubsetting, eval = F}
+## Assuming you know the position of column names.
+## But what if you resample your data?
+cleanIris[1:2, c(1, 2)]
+
+## Assuming you know the position of column names.
+## Also assuming the first two columns satisfy certain properties.
+cleanIris[1:2, c(T, T, F, F, F)]
+
+## Much better!
+## What if you can't type out all the column names
+## due to the size of your data?
+cleanIris[1:2, c("sepal_length", "sepal_width")]
+```
+
++ Something more realistic:
+
+```{r BasicSubsetting2}
+cleanIris[(cleanIris[,"sepal_length"] < 5) &
+            (cleanIris[,"sepal_width"] < 3), c("petal_length", "sepal_length")]
+```
+
+
++ (Optional) A pro `R` user might know about the `subset` function, but it suffers the same problem of not able to have multiple subsetting criteria without predefined variables.
+
+```{r BasicSubsetting3}
+subset(cleanIris,
+       subset = (sepal_length < 5) & (sepal_width < 3),
+       select = grep("length", colnames(cleanIris), value = TRUE))
+```
+
+
+
+
+## Subsetting data using *dplyr* {.build}
+
++ Think of subsetting rows and columns as two **completely different procedures**:
+  - `select` columns are operations on variables.
+  - `filter` rows are operations on observations.
+
++ See [cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf).
+
+```{r dplyr1}
+library(dplyr)
+
+cleanIris %>%
+  filter(sepal_length < 5, sepal_width < 3) %>%
+  select(contains("length"))
+```
+
+
+
+
+## *dplyr* is much more!  {.build}
+
++ `mutate` creates new columns
+
+```{r mutate}
+iris_mutated = mutate(cleanIris,
+      newVar = sepal_length + petal_length,
+      newNewVar = newVar*2) %>%
+  rename(lengthSum = newVar,
+         lengthSumSq = newNewVar)
+
+iris_mutated
+```
+
++ `group_by` + `summarise` will create summary statistics for grouped variables
+
+```{r summarise}
+bySpecies = cleanIris %>%
+  group_by(species)
+
+bySpecies
+
+bySpecies %>%
+  summarise(meanSepalLength = mean(sepal_length))
+
+```
+
++ Special `select`
+
+```{r summariseIf}
+bySpecies %>%
+  summarise_if(is.numeric,
+               funs(m = mean))
+```
+
+
+
++ `left_join` for merging data
+
+```{r left_join}
+flowers = data.frame(species = c("setosa", "versicolor", "virginica"),
+                     comments = c("meh", "kinda_okay", "love_it!"))
+
+## cleanIris has the priority in this join operation
+iris_comments = left_join(cleanIris, flowers, by = "species")
+
+## Randomly sampling 6 rows 
+sample_n(iris_comments, 6) 
+```
+
+## Checking if we cleaned the data properly (optional) {.build}
+
++ `arrange` for ordering rows
+
+```{r arrange}
+arrangeCleanIris = cleanIris %>% 
+  arrange(sepal_length, sepal_width, petal_length, petal_width)
+
+## The original data
+arrangeIris = iris %>% 
+  clean_names() %>% 
+  arrange(sepal_length, sepal_width, petal_length, petal_width)
+```
+
++ We sorted both the processed `dirtyIris` data and the arranged `iris` data. Are they the same as I claim to be?
+
+
+```{r allequal}
+## The `Species` column is character or factor
+all.equal(arrangeCleanIris, arrangeIris) 
+
+arrangeIris = arrangeIris %>% 
+  mutate(species = as.character(species)) 
+
+## Great! 
+all.equal(arrangeCleanIris, arrangeIris)
+```
+
+
+
+```{r identical}
+## identical is stronger version of all.equal
+## arrangeCleanIris is a tibble
+## but arrangeIris is a data.frame
+identical(arrangeCleanIris, arrangeIris) 
+class(arrangeCleanIris)
+class(arrangeIris)
+
+## Now, they are exactly the same!
+identical(arrangeCleanIris, arrangeIris %>% as.tibble)
+```
+
+
+
+
+
+
+
+###################################################
+# S6: `ggplot2`: best visualisation package EVER
+
+## *ggplot2* is for systematic plots {.build}
+
++ See tutorial sheet. (https://gauss17gon.shinyapps.io/ggplot2_basic_tutorial/)
+
++ Di Cook - the real reason that you should use `ggplot2` is because its design will force you to use a certain **grammar** when producing a plot. So much so, every plot you produce is actually a statistic. 
+
++ Every characteristic (e.g. axes, colour, size) of your graph is a column in a `data.frame`. i.e. you can't plot vector `x` in line 1 and vector `newx` in line 100. 
+
+```{r ggplotp1}
+library(ggplot2)
+p1 =
+  iris %>%
+  ggplot(aes(x = Sepal.Length,
+             y = Sepal.Width)) +
+  geom_point(size = 3)
+
+p1
+```
+
++ Each feature on the plot can be manipulated directly. 
+
+```{r ggplotp2}
+p2 =
+  iris %>%
+  ggplot(aes(x = Sepal.Length,
+             y = Sepal.Width,
+             colour = Petal.Length,
+             shape = Species)) +
+  geom_point(size = 3) +
+  scale_color_distiller(palette = "Spectral") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+p2
+```
+
+## Reshaping data to suit visualisation {.build}
+  + Is the data in the best possible form to be visualised?
+  + Suppose we wish to visualise each of the 4 variable (petal/sepal-width/length) for 3 levels of species of `iris`. i.e. The x-axis should have a $4 \times 3$ grouping.  
+  + The current $150 \times 5$ `data.frame` is bad for this purpose. 
+  + To achieve this we use `tidyr::gather` to create two new column in place of the 4 numerical columns:
+      1.  `variable`, which indicates (petal/sepal-width/length)
+      2.  `value`, the corresponding value for that `variable` for the `Species`
+
+```{r ggreshape}
+## Initial plotting to decide which variable should be matched to which variable
+gatherData = iris %>%
+  gather(key = variable,
+         value = value,
+         -Species) ## This is the column we don't want to throw away. 
+
+dim(gatherData)
+head(gatherData)
+
+gatherData %>%
+  ggplot(aes(x = variable,
+             y = value,
+             fill = Species)) +
+  geom_boxplot() + 
+  theme_minimal()
+```
+
+
+# S7: `tidyverse` (optional)
+
+## `tidyverse`: tidy data + tidy coding {.build}
+
++ `tidyverse` is a collection of 20 packages (still expanding!) built on the philosophy that both your data and coding should be tidy.
+
++ These functions:
+    - They integrate against each other well.
+    - They are NOT ad-hoc programming solutions.
+    - They were built with a philosophy of being "tidy" and "reproducible" in mind.
+    - They will always throw errors at you, if you don't have a thorough understanding of your data.
+
+## A gallery (optional) {.build}
+
++ Interactive plotting from ggplot
+
+```{r ggplotly, fig.width=8, fig.height=8}
+plotly::ggplotly(p2)
+```
+
++ A lot of new and powerful packages are being developed.
+
+<center><img src="sentiment.png" height="600"></center>
+
+<center><img src="pikachu.gif" height="600"></center>
+
+<!--   -   e.g. reproducible cross validation in 7 lines. I wrote this in the worst notation possible on purpose. You shouldn't use this when doing your assignments. -->
+
+<!-- ```{r modelr} -->
+<!-- subIris = iris[1:100,] -->
+<!-- subIris$Species = as.integer(subIris$Species) - 1L -->
+
+<!-- set.seed(8913) -->
+<!-- cvDf = tibble(expNum = paste0("Exp", 1:100), -->
+<!--               folds = map(expNum, -->
+<!--                           ~ modelr::crossv_kfold(subIris, k = 5))) %>% -->
+<!--   unnest -->
+
+
+<!-- modelIris = mutate(cvDf, -->
+<!--                    glms = map(train, -->
+<!--                               ~ glm(Species ~ Sepal.Length, data = .x, -->
+<!--                                     family = "binomial"))) -->
+
+<!-- fitIris = mutate(modelIris, -->
+<!--                  fitProb = map2(glms, -->
+<!--                                 test, -->
+<!--                                 ~ predict.glm(object = .x, -->
+<!--                                              newdata = .y, -->
+<!--                                              "response")), -->
+<!--                  fitClass = map(fitProb, -->
+<!--                                   ~ (.x > 0.5) + 0L), -->
+<!--                  testClass = map(test, ~ as.data.frame(.x)$Species), -->
+<!--                  missClass = map2_dbl(testClass, -->
+<!--                                       fitClass, -->
+<!--                                       ~ sum(.x != .y)) -->
+<!--                  ) -->
+
+<!-- fitIris %>% print(width = Inf) -->
+
+<!-- fitIris %>% -->
+<!--   group_by(expNum) %>% -->
+<!--   summarise(meanMissClass = mean(missClass)) %>% -->
+<!--   dplyr::select(meanMissClass) %>% -->
+<!--   ggplot(aes(x = 1, -->
+<!--              y = meanMissClass)) + -->
+<!--   geom_boxplot(width = 0.15, -->
+<!--                lwd = 1, -->
+<!--                fatten = 1.5, -->
+<!--                alpha = 0, -->
+<!--                colour = "black") + -->
+<!--   geom_violin(trim = F, -->
+<!--               alpha = 0, -->
+<!--               lwd = 1.3, -->
+<!--               colour = "#663300") + -->
+<!--   geom_jitter(size = 2, -->
+<!--               width = 0.03, -->
+<!--               colour = "red") + -->
+<!--   theme_bw() + -->
+<!--   ggtitle("Mean Miss-classifications in each iteration") -->
+<!-- ``` -->
+
+
+
+
+<!-- ```{r, eval = F, echo = F} -->
+<!-- library(ggimage) ## Extension of ggplot2 geoms -->
+<!-- library(gganimate) ## Make a series of ggplots into a GIF -->
+
+<!-- set.seed(10) -->
+
+<!-- df = tibble(time = 1:10) %>% -->
+<!--   mutate(x = map(.x = time, -->
+<!--                  .f = ~ rnorm(.x)), -->
+<!--          y = map(.x = time, -->
+<!--                  .f = ~ rnorm(.x))) -->
+
+<!-- df = df %>% unnest -->
+
+
+<!-- p = ggplot(df, aes(x = x, -->
+<!--                y = y, -->
+<!--                frame = time)) + -->
+<!--   geom_pokemon(aes(image = "pikachu")) + -->
+<!--   ggtitle("I have no idea what is going on") + -->
+<!--   theme_bw() -->
+
+<!-- gganimate(p, filename = "pikachu.gif") -->
+<!-- ``` -->
+
+# S8: Conclusion
+## Advice in the future {.build}
+
++ What I discussed today is really about being "tidy" and having a reproducible pipeline. The same principle applies when you are doing any projects. 
+
++ Use RStudio + RMarkdown to document your codes. Controversial: plain `R` isn't flexible enough to handle large projects and documentations. 
+
++ You don't have to adopt everything I taught you today! Find the component that you like to use and adapt that into your work routine. (Hint: start with [cheatsheets](https://www.rstudio.com/resources/cheatsheets/) and build up gradually.)
+
++ Take time to re-analyse an old dataset. 
+
++ The design/implementation philosophy is not for everyone. e.g. `tibble` does not have row names, which makes sense if you data is large but less so if your data is small. 
+
++ Learn the core functions in every package first! All modern package has a tutorial or vignette page.
+
++ Don't forget the theories and interpretations! This is a course about statistics after all, not Cranking-Out-Numbers-Less-Than-0.05-And-Reject-Null-Hypothesis-101.
+
+## Session Info and References {.build}
+- http://tidyverse.org/
+- https://github.com/sfirke/janitor
+```{r}
+sessionInfo()
+```
+
