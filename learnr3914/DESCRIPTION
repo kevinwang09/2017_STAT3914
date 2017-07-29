@@ -12,4 +12,8 @@ Imports:
     dplyr,
     ggplot2,
     learnr,
-    gapminder
+    gapminder,
+    RColorBrewer,
+    ggthemes,
+    tidyr,
+    ggrepel
