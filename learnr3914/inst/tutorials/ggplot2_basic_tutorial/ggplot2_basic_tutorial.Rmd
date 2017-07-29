@@ -21,6 +21,7 @@ library(ggthemes)
 library(tidyr)
 library(ggrepel)
 library(gganimate)
+library(plotly)
 
 
 knitr::opts_chunk$set(echo = T)
@@ -620,6 +621,30 @@ gapminder %>%
 ```
 
 
+### `plotly::ggplotly`
+
++ Another advantage of ggplot is that we can turn it into an interactive plot very easily using `plotly::ggplotly`
+
+```{r}
+p = gapminder %>%
+  ggplot(aes(x = year,
+             y = gdpPercap,
+             group = country,
+             colour = continent)) +
+  ## alpha controls the transparency of the geom
+  geom_point(alpha = 0.3) + 
+  scale_y_log10() +
+  stat_summary(aes(group = continent,
+                   colour = continent),
+               fun.y = median,
+               geom = "line",
+               size = 3) +
+  scale_color_brewer(palette = "Set1") 
+
+ggplotly(p)
+```
+
+
 ## Homework
 
 + Using the `gapminder` data, reproduce this plot. Hint: for each country, all years were used. 
@@ -653,6 +678,10 @@ gganimate::gganimate(p)
 
 
 <center> <img src="images/gapminder.gif" width="400" height="400"/></center>
+
++ Also compare `gganimate::gganimate(p)` with `plotly::ggplotly(p)` to see which animated plot is better for interactive visualisation?
+
+
 
 
 ## Session Info
