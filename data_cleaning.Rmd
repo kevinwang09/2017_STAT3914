@@ -446,7 +446,7 @@ bySpecies %>%
 
 + If you managed to install all packages successfully, you should be able to run the following to get an interactive tutorial sheet. 
 
-+ Otherwise, please download and compile the "ggplot2_basic_tutorial.Rmd"  [here](https://github.com/kevinwang09/2017_STAT3914/tree/master/learnr3914/inst/tutorials/ggplot2_basic_tutorial)
++ Otherwise, please download and compile the "ggplot2_basic_tutorial.Rmd"  [here](https://github.com/kevinwang09/2017_STAT3914/blob/master/ggplot2_basic_tutorial.zip)
 
 ```{r, eval = F}
 library(learnr3914)
@@ -459,65 +459,23 @@ learnggplot2()
 
 + Di Cook - the real reason that you should use `ggplot2` is because its design will force you to use a certain **grammar** when producing a plot. So much so, every plot you produce is actually a statistic. 
 
-+ Every characteristic (e.g. axes, colour, shape) of your graph is a column in a `data.frame`. i.e. you can't plot vector `x` in line 1 and vector `newx` in line 100. 
-
 ```{r ggplotp1}
 library(ggplot2)
 p1 =
   iris %>%
   ggplot(aes(x = Sepal.Length,
-             y = Sepal.Width)) +
+             y = Sepal.Width,
+             colour = Species)) +
   geom_point(size = 3)
 
 p1 
 ```
 
-+ Each feature on the plot can be manipulated directly. 
-
-```{r ggplotp2}
-p2 =
-  iris %>%
-  ggplot(aes(x = Sepal.Length,
-             y = Sepal.Width,
-             colour = Species)) +
-  geom_point(size = 3) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-p2
-```
-
-## Reshaping data to suit visualisation {.build}
-  + Is the data in the best possible form to be visualised?
-  + Suppose we wish to visualise each of the 4 variable (petal/sepal-width/length) for 3 levels of species of `iris`. i.e. The x-axis should have a $4 \times 3$ grouping.  
-  + The current $150 \times 5$ `data.frame` is bad for this purpose. 
-  + To achieve this we use `tidyr::gather` to create two new column in place of the 4 numerical columns:
-      1.  `variable`, which indicates (petal/sepal-width/length)
-      2.  `value`, the corresponding value for that `variable` for the `Species`
-
-```{r ggreshape}
-## Initial plotting to decide which variable should be matched to which variable
-gatherData = iris %>%
-  gather(key = variable,
-         value = value,
-         -Species)
-
-head(gatherData)
-
-gatherData %>%
-  ggplot(aes(x = variable,
-             y = value,
-             fill = Species)) +
-  geom_boxplot() + 
-  theme_minimal()
-```
-
-
 
 # S7: Conclusion
 ## Homework: practise on real data 
 
-+ Here is a dataset. (h.all.v6.0.symbols.gmt)
++ Here is a dataset. [](https://github.com/kevinwang09/2017_STAT3914/blob/master/h.all.v6.0.symbols.gmt)
 
 1.  Read the gene-set data into R using a package you found online. 
 1.  What is the R class of this data? Is it a `data.frame`?
@@ -549,14 +507,12 @@ genes %>% table %>% sort %>% tail
 + Interactive plotting from ggplot
 
 ```{r ggplotly, fig.width=8, fig.height=8}
-plotly::ggplotly(p2)
+plotly::ggplotly(p1)
 ```
 
 + A lot of new and powerful packages are being developed.
 
 <center><img src="sentiment.png" height="600"></center>
-
-<center><img src="pikachu.gif" height="600"></center>
 
 <!--   -   e.g. reproducible cross validation in 7 lines. I wrote this in the worst notation possible on purpose. You shouldn't use this when doing your assignments. -->
 
@@ -644,23 +600,24 @@ plotly::ggplotly(p2)
 
 ## Advice in the future {.build}
 
-+ What I discussed today is really about being "tidy" and having a reproducible pipeline. The same principle applies when you are doing any projects. 
++ Computational tools and organisation.
 
-+ Use RStudio + RMarkdown to document your codes. Controversial: plain `R` isn't flexible enough to handle large projects and documentations. 
++ Use RStudio + RMarkdown to document your codes.
 
-+ You don't have to adopt everything I taught you today! Find the component that you like to use and adapt that into your work routine. (Hint: start with [cheatsheets](https://www.rstudio.com/resources/cheatsheets/) and build up gradually.)
++ You don't have to adopt everything I taught you today! 
+
++ Find the component that you like to use and adapt that into your work routine. (Hint: start with [cheatsheets](https://www.rstudio.com/resources/cheatsheets/) and build up gradually.)
 
 + Take time to re-analyse an old dataset. 
 
-+ The design/implementation philosophy is not for everyone. e.g. `tibble` does not have row names, which makes sense if you data is large but less so if your data is small. 
-
-+ Learn the core functions in every package first! All modern package has a tutorial or vignette page.
++ Learn core functions and vignette.
 
 + Don't forget the theories and interpretations! This is a course about statistics after all, not Cranking-Out-Numbers-Less-Than-0.05-And-Reject-Null-Hypothesis-101.
 
 ## Session Info and References {.build}
 - http://tidyverse.org/
 - https://github.com/sfirke/janitor
+
 ```{r}
 sessionInfo()
 ```

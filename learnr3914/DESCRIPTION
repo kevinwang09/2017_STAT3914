@@ -16,4 +16,5 @@ Imports:
     RColorBrewer,
     ggthemes,
     tidyr,
-    ggrepel
+    ggrepel, 
+    plotly

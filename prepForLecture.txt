@@ -1,0 +1,27 @@
+Method 1:
+Step 1: Run the following codes in RStudio
+
+-------- Begin Code -------------------
+install.packages(c("ggplot2","dplyr","tidyr","janitor","plotly",
+                   "devtools","learnr","gapminder")) 
+
+library(devtools)
+install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
+
+library(learnr3914)
+learnggplot2()
+--------- End Code --------------------
+
+=============================================================================
+Method 2: 
+Step 1: Run the code 
+
+-------- Begin Code -------------------
+install.packages(c("ggplot2","dplyr","tidyr","janitor","plotly",
+                   "devtools","learnr","gapminder")) 
+--------- End Code --------------------
+
+Step 2: Download the zip file from 
+https://github.com/kevinwang09/2017_STAT3914/blob/master/ggplot2_basic_tutorial.zip
+
+Step 3: Unzip the file. And then compile "ggplot2_basic_tutorial.Rmd" locally in your RStudio. 
