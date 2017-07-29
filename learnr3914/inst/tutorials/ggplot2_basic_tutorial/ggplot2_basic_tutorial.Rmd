@@ -20,7 +20,6 @@ library(RColorBrewer)
 library(ggthemes)
 library(tidyr)
 library(ggrepel)
-library(gganimate)
 library(plotly)
 
 
@@ -680,8 +679,6 @@ gganimate::gganimate(p)
 <center> <img src="images/gapminder.gif" width="400" height="400"/></center>
 
 + Also compare `gganimate::gganimate(p)` with `plotly::ggplotly(p)` to see which animated plot is better for interactive visualisation?
-
-
 
 
 ## Session Info
