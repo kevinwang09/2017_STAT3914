@@ -23,6 +23,7 @@ library(ggrepel)
 library(plotly)
 
 
+
 knitr::opts_chunk$set(echo = T)
 tutorial_options(exercise.eval = FALSE)
 ```
@@ -60,11 +61,11 @@ options(tutorial.storage = list(
 ## `ggplot2` introduction
 
 + `ggplot2` is a powerful data visualisation package in `R`.
-+ The "gg" stands for "grammar of graphics", which means, the codes that is producing the plots has sophisticated and rigourous logic behind it. 
++ The "gg" stands for "grammar of graphics", which means, the codes that are producing the plots has sophisticated and rigorous logic behind it. 
 
 + (From Professor Di Cook) One most important idea behind `ggplot2::ggplot` is that you should think about each plot as a statistic: it is a transformation of your data. It is built to be informative. It is built to communicate insights.  
 
-+ When you are going through this tutorial, I encourage you to challenge every plot I made. Ask the question if these plots can be improve in some ways to better communicate ideas and insights in the data.  
++ When you are going through this tutorial, I encourage you to challenge every plot I made. Ask the question if these plots can be improved in some ways to better communicate ideas and insights in the data.  
 
 
 ## Building up your first `ggplot`
@@ -82,9 +83,9 @@ ggplot(iris)
 
 ### Adding aesthetics to ggplot
 
-+ The reason that we got a blank plot is because we didn't tell `ggplot` what we want to see on this plot.
++ The reason that we got a blank plot is that we didn't tell `ggplot` what we want to see on this plot.
 
-+ We know that there is a column call `Sepal.Length` and `Sepal.Width` in the `iris` data.frame, so let's use these as `x` and `y` aesthetics.
++ We know that there is a column called `Sepal.Length` and `Sepal.Width` in the `iris` data.frame, so let's use these as `x` and `y` aesthetics.
 
 ```{r addingAes1, exercise = T}
 ggplot(iris, aes(x = Sepal.Length,
@@ -93,8 +94,7 @@ ggplot(iris, aes(x = Sepal.Length,
 
 + Running the code above, we can see that these two variables are loaded onto the plot as aesthetics of the plot. 
 
-+ But we didn't tell ggplot what sort of plot we want! `ggplot` isn't going to guess what plot you want! If you want a scatter plot or a tile plot, you need to tell it explictly. 
-
++ But we didn't tell ggplot what sort of plot we want! `ggplot` isn't going to guess what plot you want! If you want a scatter plot or a tile plot, you need to tell it explicitly. 
 
 ### Adding `geom_` to ggplot
 
@@ -141,7 +141,7 @@ ggplot(iris,
 
 ### Facet
 
-+ There are only that much things we can put on a graph: points, size, colours, text, lines, etc. And human eyes isn't very good at perceiving too many elements on a plot. Hence, we might need to split our data in some ways to create multiple plots. 
++ There are only that much things we can put on a graph: points, size, colours, text, lines, etc. And human eyes aren't very good at perceiving too many elements on a plot. Hence, we might need to split our data in some ways to create multiple plots. 
 
 + In base R, we will just run the plotting code on split data. 
 
@@ -157,11 +157,11 @@ ggplot(iris,
 ```
 
 
-### Colours!
+### Colours
 
 + The previous plot doesn't look very nice as the dark blue shadings do not reflect the subtle numerical differences in the variable `Petal.Length`.
 
-+ Changing colour palette is very easy in ggplot. We will discuss this later.
++ Changing colour palette is very easy in ggplot. We will discuss this in extensive details in the next section. 
 
 ```{r colour_brewer, exercise = T, exercise.setup = "facet"}
 spectralCols = last_plot() + scale_color_distiller(palette = "Spectral")
@@ -309,41 +309,9 @@ ggplot(iris,
 
 
 
-## Advanced considerations
 
 
 
-### Reproducibility
-
-+ In base R, it is possible to plot two (compatitable) objects together, even if they don't belong in the same `data.frame`. 
-
-+ In ggplot, **by design**, you cannot do this! Everything are forced to be in a `data.frame`. While it might turn some people away from using it, it is actually critical in terms of reproducibility. 
-
-+ This plotting design ensures that whatever data you are plotting is of the correct dimension and will always be a singular obejct. 
-
-+ This is opposite to plotting vector `a` and `transformed.a`, two objects that are 500 lines of codes apart in which case you will rely on your collaborator remembering if all transformations has been done correctly without permutation of indices.
-
-
-```{r reproduce1, exercise = T, exercise.cap = "an example of the importance of pairing observations", exercise.setup = "facet"}
-last_plot() + 
-  geom_smooth(method = "lm")
-```
-
-
-```{r reproduce2, exercise = T, exercise.cap = "every ggplot has a copy of the data", exercise.setup = "facet"}
-str(last_plot())
-```
-
-### ggplot as a statistic
-
-+ As statisticians, we are familiar with the notion of a statistic as a transformed random variable. For example, let $(X_1, \dots, X_n)$ be real valued random variables, then we can compute the mean as the summation (a transformation) of these random variables and then scale the sum by $\frac{1}{n}$ (another transformation). And we **interprete** the mean as an essential property of these random variables.
-
-+ We should think of ggplot as a statistic. It accepts data (`data.frame`), which we can think of it as a multivariate random variable. We then specify a list of transformations (`aes` and `geom`) to arrive at a meaningful representation of the data. 
-
-+ The two most important considerations for plotting:
-
-    - Every plot should communicate some critical information about your data. 
-    - Every plot should be the best form of communicating that critical information.
 
 
 ## An example of poor design
@@ -368,7 +336,7 @@ ggplot(mydata,
 ```
 
 
-+ The fix is transform your data before plotting.
++ The fix is to transform your data before plotting.
 
 ```{r mydataFixedPlot, exercise = T, exercise.cap = "Add in a colouring variable into your ggplot"}
 set.seed(2)
@@ -393,7 +361,7 @@ ggplot(mydataFixed,
 boxplot(iris[,-5]) ## Dropping the Species column
 ```
 
-+ But what if we wish to visualise each of these four columns as boxplot, **for each `Species`**?
++ But what if we wish to visualise each of these four columns as boxplots, **separately for each `Species`**?
 
 + We need to reshape our data into a better format for visualisation. 
 
@@ -435,9 +403,9 @@ gatherData %>%
 glimpse(gapminder)
 ```
 
-+ The following plots aren't particular informative. But they can guide us through initial exploration of the data
++ The following plots aren't particularly informative. But they can guide us through initial exploration of the data
 
-+ We should see a general increasing trend in all three measurements. But at this resolution, i.e. visualising all 142 countries all at once, does not communicate any particularly useful messages.
++ We should see a generally increasing trend in all three measurements. But at this resolution, i.e. visualising all 142 countries all at once, does not communicate any particularly useful messages.
 
 ```{r gapPoint, exercise = T}
 gapminder %>%
@@ -474,7 +442,7 @@ gapminder %>%
 ```
 
 
-+ Now we set a **group** variable for our line plot. Setting `group = countries` is the most natural choice, since each year and each country defines an unique row in the gapminder data. 
++ Now we set a **group** variable for our line plot. Setting `group = countries` is the most natural choice since each year and each country defines a unique row in the gapminder data.  
 
 ```{r gapPointLine2, exercise = T}
 gapminder %>%
@@ -506,10 +474,9 @@ gapminder %>%
 ```{r manyColours}
 question("Before we look at how to improve this plot in the next section, do you think we should use `colour = country` in the plot above? Why and why not?",
   answer("Yes", message = "Incorrect. I mean, you can always try.. But your computer might crash."),
-  answer("No", correct = T, message = "There will be 142 distinct categorical colours. That is too many for human eye to distinguish")
+  answer("No", correct = T, message = "There will be 142 distinct categorical colours. That is too many for the human eye to distinguish")
 )
 ```
-
 
 
 ### Thinking about the data
@@ -533,7 +500,7 @@ gapminder %>%
 
 ### Highlighting differences in continents
 
-+ We see most of Europe are doing very well in history, but majority of African nations are always at the bottom of the plot.
++ We see most of Europe are doing very well in history, but the majority of African nations are always at the bottom of the plot.
 
 + If we want, we can highlight construct the median GDP of each continent while also showing the nations.
 
@@ -558,6 +525,38 @@ gapminder %>%
 
 
 ## Advanced topics
+
+### Reproducibility
+
++ In base R, it is possible to plot two (compatible) objects together, even if they don't belong in the same `data.frame`. 
+
++ In ggplot, **by design**, you cannot do this! Everything is forced to be in a `data.frame`. While it might turn some people away from using it, it is actually critical in terms of reproducibility. 
+
++ This plotting design ensures that whatever data you are plotting is of the correct dimension and will always be a singular object. 
+
++ This is opposite to plotting vector `a` and `transformed.a`, two objects that are 500 lines of codes apart in which case you will rely on your collaborator remembering if all transformations have been done correctly without permutation of indices.
+
+
+```{r reproduce1, exercise = T, exercise.cap = "an example of the importance of pairing observations", exercise.setup = "facet"}
+last_plot() + 
+  geom_smooth(method = "lm")
+```
+
+
+```{r reproduce2, exercise = T, exercise.cap = "every ggplot has a copy of the data", exercise.setup = "facet"}
+str(last_plot())
+```
+
+### ggplot as a statistic
+
++ As statisticians, we are familiar with the notion of a statistic as a transformed random variable. For example, let $(X_1, \dots, X_n)$ be real valued random variables, then we can compute the mean as the summation (a transformation) of these random variables and then scale the sum by $\frac{1}{n}$ (another transformation). And we **interprete** the mean as an essential property of these random variables.
+
++ We should think of ggplot as a statistic. It accepts data (`data.frame`), which we can think of it as a multivariate random variable. We then specify a list of transformations (`aes` and `geom`) to arrive at a meaningful representation of the data. 
+
++ The two most important considerations for plotting:
+
+    - Every plot should communicate some critical information about your data. 
+    - Every plot should be the best form of communicating that critical information.
 
 ### `geom_smooth`
 
@@ -678,7 +677,12 @@ gganimate::gganimate(p)
 
 <center> <img src="images/gapminder.gif" width="400" height="400"/></center>
 
-+ Also compare `gganimate::gganimate(p)` with `plotly::ggplotly(p)` to see which animated plot is better for interactive visualisation?
++ Compare `p + facet_wrap(~year)`, `gganimate::gganimate(p)` and `plotly::ggplotly(p)`. Explain which plot(s) is most suitable for publishing articles, exploratory analysis and collaboration with colleagues. 
+
+```{r ggplotly slider, echo = F}
+ggplotly(p)
+```
+
 
 
 ## Session Info

@@ -1,6 +1,6 @@
 ---
 title: "Data exploration with `tidyverse`"
-author: "Kevin Y. X. Wang"
+author: '[Kevin Y. X. Wang](http://www.maths.usyd.edu.au/ut/people?who=KY_Wang&sms=y)'
 date: "28 July 2017"
 output:
   ioslides_presentation:
@@ -22,6 +22,8 @@ opts_chunk$set(comment=NA, warning=FALSE, message=FALSE)
 options(tibble.print_max = 10, tibble.print_min = 5)
 # library(visNetwork)
 ```
+
+
 
 <style>
 slides > slide { overflow: scroll; }
@@ -57,9 +59,6 @@ write_csv(dirtyIris, path = "dirtyIris.csv")
 + All materials are on: https://github.com/kevinwang09/2017_STAT3914
 
 <!-- + Go and download this file: https://github.com/kevinwang09/2017_STAT3914/dirtyIris_excel.xlsx -->
-
-+ Familiar yourself with the `iris` dataset. Typing `iris` into `R` console should load this data. Pay attention to its column, row names and structure of each column. 
-
 + Please run these codes on your laptop,
 
 ```{r, eval = F}
@@ -71,9 +70,12 @@ library(devtools)
 install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
 ```
 
++ Familiar yourself with the `iris` dataset. Typing `iris` into `R` console should load this data. Pay attention to its column, row names and structure of each column. 
+
+
 
 #####################################################
-# S1: Necessary evils of Applied Statistics
+# S1: Necessary of Applied Statistics
 ## Good statistical discoveries don't fall out from the sky {.build}
 
 + Statisticians are great at many things:
@@ -97,19 +99,19 @@ install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
 <center> <img src="data-science-explore.png" width="600" /> </center>
 
 + Assume we have data
++ Assume we have questions, which the data can be used to answer
 + Assume we have cleaned data
-+ Assume we can reveal aspects of the data
-+ Assume we can perform statistics on the data
-+ Assume we interrogated the right aspects of the data
-+ Assume we did everything right, communicate insights to others
++ Assume we interrogated the right aspects of the data using appropriate statistics
++ Assume we did everything right, communicate insights with others
 
 
 ## Summary of this lecture {.build}
 
-+ Powerful tools for data preparation to allow rapid application of statistics. 
++ Powerful tools for data preparation.
 + Passive learning is not going to work.
++ Our goal: clean the `dirtyIris` data to be exactly the same as the original `iris` data.
 
-<center> <img src="dirtyIris_screenshot.png" width="700" /> </center>
+<center> <img src="dirtyIris_screenshot.png" width="650" /> </center>
 
 + S1: Introduction
 + S2: Reading in data using `readr` and `readxl`
@@ -124,7 +126,7 @@ install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
 # S2: Reading data
 ## Better read/write data {.build}
 
-+ `base` R functions haven't adapted to the needs of modern users.
++ `base` R functions are not sufficient for modern uses.
 
 + `readr` functions are superior in data import warnings, column type handling, speed, scalability and consistency.
 
@@ -133,20 +135,44 @@ library(readr)
 ```
 
 
-## Reading data using *readr* {.build}
+## Reading data using *readr* (1){.build}
 
-```{r read_csv}
-dirtyIris = read_csv("dirtyIris.csv")
-class(dirtyIris)
+```{r read_csv, message = T}
+dirtyIris = readr::read_csv("dirtyIris.csv")
+class(dirtyIris) ## `tibble` is a `data.frame` with better formatting.
+```
++ `readxl` and `haven` (for SAS, SPSS etc) packages work similarly. 
+
+
+
+## Reading data using *readr* (2){.build}
+
+```{r dirtyIrisLook}
 dirtyIris
 ```
-
-+ `readxl` and `haven` (for SAS, SPSS etc.) packages work similarly. 
-+ `tibble` is a `data.frame` with better formatting.
-
 <center> <img src="OMG_cat.jpg" width="200" height="200"/> </center>
 
 + We now proceed to data cleaning on the `dirtyIris` dataset. 
+
+## Too trivial? Here is a short homework {.build}
+
+Here is a dataset. [Click here.](https://github.com/kevinwang09/2017_STAT3914/blob/master/h.all.v6.0.symbols.gmt)
+
+1.  Write 2 sentences about what is a `.gmt` file and who publishes this format?
+1.  Which packages can read in `.gmt` files?
+1.  How to download this package?
+1.  What class is this data once read into `R`? Is it a `data.frame`?
+1.  The data contains 50 different gene-sets. What is the size of each gene-set?
+1.  What is the mostly frequent mentioned 6 genes?
+
+```{r, eval = F, echo = F}
+library(qusage)
+gs = read.gmt("h.all.v6.0.symbols.gmt")
+genes = gs %>% unlist
+genes %>% table %>% sort %>% tail
+```
+
+
 
 
 # S3: Cleaned data
@@ -168,16 +194,12 @@ dirtyIris
 
 + Clean data is a well-designed `data.frame`.
 
-+ `base` R functions might struggle with all issues we mentioned. 
-
-+ Each column should be imported according to their most appropriate type.
-    - e.g. Months should be read in as `character` or `Date`, not a `factor` ordered alphabetically (default in `R`).
-
-+ Basic data cleaning using `janitor` package.
-
-+ More advanced data manipulation through `dplyr`.
++ Column type (esp. dates and factors) handling was the primary reason we used `readr` instead of `base` R when importing data.
 
 + Our goal: clean the `dirtyIris` data to be exactly the same as the original `iris` data.
+
+    - Basic data cleaning using `janitor` package.
+    - More advanced data manipulation through `dplyr`.
 
 
 ## *janitor*: basic data cleaning {.build}
@@ -186,10 +208,10 @@ dirtyIris
 
 ```{r janitor1}
 library(janitor)
-dirtyIris
+glimpse(dirtyIris)
 ## Clean up column names
 better = clean_names(dirtyIris) 
-better
+glimpse(better)
 ```
 
 ## *janitor*: removal of missing values {.build}
@@ -201,9 +223,8 @@ better
 evenBetter = remove_empty_rows(better)
 evenBetter = remove_empty_cols(evenBetter)
 
-evenBetter
+glimpse(evenBetter)
 ```
-
 
 + Genuinely missing values should be retained, but in this case, the NA's were added.
 
@@ -246,7 +267,7 @@ glimpse(iris)
 
 
 #########################################
-# S4: Clean coding (Skim through)
+# S4: Clean coding (skim through)
 ## Coding complexity increases with the number of brackets {.build}
 
 + The "inside out" structure of coding isn't great for human reading.
@@ -281,8 +302,8 @@ cleanIris$sepal_length %>%
 
 
 
-# S5: *dplyr*: data subsetting master
-## Traditional way of subsetting data in R (optional) {.build}
+# S5: `dplyr`: data subsetting master
+## Traditional way of subsetting data in R (1) {.build}
 
 + If I want the first two rows of column `sepal_length` and `sepal_width` in the `cleanIris` data:
 
@@ -301,7 +322,9 @@ cleanIris[1:2, c(T, T, F, F, F)]
 cleanIris[1:2, c("sepal_length", "sepal_width")]
 ```
 
-+ Something more realistic:
+
+## Traditional way of subsetting data in R (2) {.build}
++ Something more realistic: we want to extract rows based on some compounded criteria and select columns based on special keywords.
 
 ```{r BasicSubsetting2}
 cleanIris[(cleanIris[,"sepal_length"] < 5) &
@@ -323,8 +346,8 @@ subset(cleanIris,
 ## Subsetting data using *dplyr* {.build}
 
 + Think of subsetting rows and columns as two **separate different procedures**:
-  - `select` columns are operations on variables.
-  - `filter` rows are operations on observations.
+  - `select` columns are operations on variables, and 
+  - `filter` rows are operations on observations
 
 + See [dplyr cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf).
 
@@ -332,7 +355,8 @@ subset(cleanIris,
 library(dplyr)
 
 cleanIris %>%
-  filter(sepal_length < 5, sepal_width < 3) %>%
+  filter(sepal_length < 5,
+         sepal_width < 3) %>%
   select(contains("length"))
 ```
 
@@ -422,11 +446,13 @@ identical(arrangeCleanIris, arrangeIris %>% as.tibble)
 
 + select only if certain string is present
 
-```{r selectContains}
+```{r selectWith}
 cleanIris %>% 
-  select(contains("length"))
-```
+  select(ends_with("length"))
 
+cleanIris %>% 
+  select(starts_with("sepal"))
+```
 
 + select only if a column satisfy a certain condition
 
@@ -436,28 +462,25 @@ bySpecies %>%
                funs(m = mean))
 ```
 
-
-
-
-
-
 # S6: `ggplot2`: the best visualisation package
 ## *ggplot2* tutorial sheet {.build}
 
 + If you managed to install all packages successfully, you should be able to run the following to get an interactive tutorial sheet. 
-
-+ Otherwise, please download and compile the "ggplot2_basic_tutorial.Rmd"  [here](https://github.com/kevinwang09/2017_STAT3914/blob/master/ggplot2_basic_tutorial.zip)
 
 ```{r, eval = F}
 library(learnr3914)
 learnggplot2()
 ```
 
++ Otherwise, please download and compile the "ggplot2_basic_tutorial.Rmd"  [here](https://github.com/kevinwang09/2017_STAT3914/blob/master/ggplot2_basic_tutorial.zip)
+
++ If all fails, please send me an email at kevin.wang@sydney.edu.au.
+
 
 
 ## *ggplot2*: the philosophy {.build}
 
-+ Di Cook - the real reason that you should use `ggplot2` is because its design will force you to use a certain **grammar** when producing a plot. So much so, every plot you produce is actually a statistic. 
++ Di Cook - the real reason that you should use `ggplot2` is that, its design will force you to use a certain **grammar** when producing a plot. So much so, every plot you produce is actually a statistic. 
 
 ```{r ggplotp1}
 library(ggplot2)
@@ -473,34 +496,15 @@ p1
 
 
 # S7: Conclusion
-## Homework: practise on real data 
 
-+ Here is a dataset. [](https://github.com/kevinwang09/2017_STAT3914/blob/master/h.all.v6.0.symbols.gmt)
+## tidy data, coding, modelling and reporting {.build}
 
-1.  Read the gene-set data into R using a package you found online. 
-1.  What is the R class of this data? Is it a `data.frame`?
-1.  How many genes are in each gene-set?
-1.  What is the mostly frequent mentioned 6 genes?
-
-```{r, eval = F, echo = F}
-library(qusage)
-gs = read.gmt("h.all.v6.0.symbols.gmt")
-genes = gs %>% unlist
-genes %>% table %>% sort %>% tail
-```
-
-
-
-
-## `tidyverse`: tidy data + tidy coding {.build}
-
-+ `tidyverse` is a collection of 20+ packages built on the philosophy that both your data and coding should be tidy.
++ `tidyverse` is a collection of 20+ packages built on the philosophy of being organised for the purpose of collaboration. 
 
 + These functions:
     - They integrate against each other well.
     - They are NOT ad-hoc programming solutions.
-    - They were built with a philosophy of being "tidy" and "reproducible" in mind.
-    - They will always throw errors at you, if you don't have a thorough understanding of your data.
+    - They will always throw errors at you if you don't have a thorough understanding of your data.
 
 ## A gallery (optional) {.build}
 
@@ -513,6 +517,57 @@ plotly::ggplotly(p1)
 + A lot of new and powerful packages are being developed.
 
 <center><img src="sentiment.png" height="600"></center>
+
+
++ Preview of next lecture: data visualisation on `gapminder`. http://edinbr.org/edinbr/2016/05/11/may-Hadley-Update2-PostingTalk.html
+
+```{r, eval = F}
+library(gapminder)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(broom)
+library(ggplot2)
+
+gapminder <- gapminder %>% mutate(year1950 = year - 1950)
+
+by_country <- gapminder %>%
+        group_by(continent, country) %>%
+        nest()
+
+country_model <- function(df) {
+        lm(lifeExp ~ year1950, data = df)
+}
+
+models <- by_country %>%
+        mutate(
+                model = data %>% map(country_model)
+        )
+
+models <- models %>%
+        mutate(
+                glance  = model %>% map(broom::glance),
+                rsq     = glance %>% map_dbl("r.squared"),
+                tidy    = model %>% map (broom::tidy),
+                augment = model %>% map (broom::augment)
+        )
+
+models %>%
+        unnest(tidy) %>%
+        select(continent, country, term, estimate, rsq) %>%
+        spread(term, estimate) %>%
+        ggplot(aes(`(Intercept)`, year1950)) +
+                geom_point(aes(colour = continent, size = rsq)) +
+                geom_smooth(se = FALSE) + 
+                xlab("Life Expectancy in 1950") +
+                ylab("Linear yearly improvement") + 
+                ggtitle("LM on life exp. explained by time elapsed from 1950") +
+                scale_size_area(expression(R^2)) +
+                theme(legend.position = "bottom")
+```
+
+
+
 
 <!--   -   e.g. reproducible cross validation in 7 lines. I wrote this in the worst notation possible on purpose. You shouldn't use this when doing your assignments. -->
 
@@ -600,13 +655,11 @@ plotly::ggplotly(p1)
 
 ## Advice in the future {.build}
 
-+ Computational tools and organisation.
-
 + Use RStudio + RMarkdown to document your codes.
 
-+ You don't have to adopt everything I taught you today! 
++ Learn some computational tools. They are not statistics, but not learning them could inhibit your career aspects.
 
-+ Find the component that you like to use and adapt that into your work routine. (Hint: start with [cheatsheets](https://www.rstudio.com/resources/cheatsheets/) and build up gradually.)
++ Find "cool" components and adapt those into your work routine. (Hint: start with [all RStudio cheatsheets](https://www.rstudio.com/resources/cheatsheets/) and build up gradually.)
 
 + Take time to re-analyse an old dataset. 
 
@@ -615,8 +668,14 @@ plotly::ggplotly(p1)
 + Don't forget the theories and interpretations! This is a course about statistics after all, not Cranking-Out-Numbers-Less-Than-0.05-And-Reject-Null-Hypothesis-101.
 
 ## Session Info and References {.build}
-- http://tidyverse.org/
-- https://github.com/sfirke/janitor
+
+- Dr. Garth Tarr
+- tidyverse.org
+- github.com/sfirke/janitor
+- gapminder.org
+- rstudio.com
+
+
 
 ```{r}
 sessionInfo()
