@@ -1,22 +1,25 @@
 ---
 title: "Data exploration with `tidyverse`"
 author: '[Kevin Y. X. Wang](http://www.maths.usyd.edu.au/ut/people?who=KY_Wang&sms=y)'
-date: "28 July 2017"
+date: "31 July 2017"
 output:
   ioslides_presentation:
-    fig_height: 7
-    fig_width: 7
+    fig_height: 6
+    fig_width: 6
     incremental: yes
     self_contained: yes
+    transition: faster
     widescreen: yes
 always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
-library(knitr)
-library(tidyverse)
-library(plotly)
-opts_chunk$set(comment=NA, warning=FALSE, message=FALSE)
+library(ggplot2)
+library(dplyr)
+library(janitor)
+
+
+# opts_chunk$set(comment=NA, warning=FALSE, message=FALSE)
 
 
 options(tibble.print_max = 10, tibble.print_min = 5)
@@ -63,7 +66,7 @@ write_csv(dirtyIris, path = "dirtyIris.csv")
 
 ```{r, eval = F}
 ## Might be a while...
-install.packages(c("ggplot2","dplyr","tidyr","janitor","plotly",
+install.packages(c("ggplot2","dplyr", "readr","tidyr","janitor","plotly",
                    "devtools","learnr","gapminder")) 
 
 library(devtools)
@@ -107,11 +110,11 @@ install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
 
 ## Summary of this lecture {.build}
 
-+ Powerful tools for data preparation.
+<!-- + Powerful tools for data preparation. -->
 + Passive learning is not going to work.
 + Our goal: clean the `dirtyIris` data to be exactly the same as the original `iris` data.
 
-<center> <img src="dirtyIris_screenshot.png" width="650" /> </center>
+<center> <img src="dirtyIris_screenshot.png" width="600" /> </center>
 
 + S1: Introduction
 + S2: Reading in data using `readr` and `readxl`
@@ -135,7 +138,7 @@ library(readr)
 ```
 
 
-## Reading data using *readr* (1){.build}
+## Reading data using *readr* (1){.smaller .build}
 
 ```{r read_csv, message = T}
 dirtyIris = readr::read_csv("dirtyIris.csv")
@@ -145,7 +148,7 @@ class(dirtyIris) ## `tibble` is a `data.frame` with better formatting.
 
 
 
-## Reading data using *readr* (2){.build}
+## Reading data using *readr* (2){.smaller .build}
 
 ```{r dirtyIrisLook}
 dirtyIris
@@ -202,19 +205,20 @@ genes %>% table %>% sort %>% tail
     - More advanced data manipulation through `dplyr`.
 
 
-## *janitor*: basic data cleaning {.build}
+## *janitor*: basic data cleaning {.smaller .build}
 
 + Clean up the bad column names
 
 ```{r janitor1}
 library(janitor)
+library(dplyr)
 glimpse(dirtyIris)
 ## Clean up column names
 better = clean_names(dirtyIris) 
 glimpse(better)
 ```
 
-## *janitor*: removal of missing values {.build}
+## *janitor*: removal of empty rows and columns {.build}
 
 + Purely empty rows/columns are non-informative.
 
@@ -226,49 +230,22 @@ evenBetter = remove_empty_cols(evenBetter)
 glimpse(evenBetter)
 ```
 
-+ Genuinely missing values should be retained, but in this case, the NA's were added.
+## *janitor*: removal of *any* rows with NA {.smaller .build}
 
-+ Removing any rows with NA
++ Genuinely missing values should be retained, but in this case, the NA's were added. Only use `na.omit` when you 100% certain of the structure of your data. 
+
 ```{r janitor3}
-evenBetterBetter = remove_missing(evenBetter) 
+evenBetterBetter = na.omit(evenBetter) 
 cleanIris = evenBetterBetter
 ```
 
-+ We now have agreement over the size of the two data
 ```{r janitor4}
 glimpse(cleanIris)
 glimpse(iris)
 ```
-
-
-
-
-<!-- ## *janitor* also has some good tabulate functions (optional) {.build} -->
-
-<!-- ```{r janitor3} -->
-<!-- ## Equivalent to: -->
-<!-- # table(evenBetter$employee_status) -->
-<!-- # prop.table(table(evenBetter$employee_status)) -->
-
-<!-- tabyl(evenBetter$employee_status) -->
-
-
-<!-- ## Equivalent to: -->
-<!-- # with(evenBetter, -->
-<!-- #      table(employee_status, full_time)) -->
-
-<!-- crosstab(.data = evenBetter, -->
-<!--          employee_status, full_time) -->
-<!-- ``` -->
-
-
-
-
-
-
 #########################################
 # S4: Clean coding (skim through)
-## Coding complexity increases with the number of brackets {.build}
+## Coding complexity increases with the number of brackets {.smaller .build}
 
 + The "inside out" structure of coding isn't great for human reading.
 
@@ -278,7 +255,7 @@ plot(density(cleanIris$sepal_length), col = "red", lwd = 2)
 ```
 
 
-## Piping: read code from left to right  {.build}
+## Piping: read code from left to right  {.smaller .build}
 
 + We introduce a new notation: " x %>% f " means "f(x)". We call this operation as "x pipe f".
 
@@ -291,16 +268,6 @@ cleanIris$sepal_length %>%
   density %>%
   plot(col = "red", lwd = 2)
 ```
-
-
-
-
-
-
-
-
-
-
 
 # S5: `dplyr`: data subsetting master
 ## Traditional way of subsetting data in R (1) {.build}
@@ -334,16 +301,16 @@ cleanIris[(cleanIris[,"sepal_length"] < 5) &
 
 + (Optional) A pro `R` user might know about the `subset` function, but it suffers the same problem of not able to have multiple subsetting criteria without predefined variables.
 
-```{r BasicSubsetting3}
-subset(cleanIris,
-       subset = (sepal_length < 5) & (sepal_width < 3),
-       select = grep("length", colnames(cleanIris), value = TRUE))
-```
+<!-- ```{r BasicSubsetting3} -->
+<!-- subset(cleanIris, -->
+<!--        subset = (sepal_length < 5) & (sepal_width < 3), -->
+<!--        select = grep("length", colnames(cleanIris), value = TRUE)) -->
+<!-- ``` -->
 
 
 
 
-## Subsetting data using *dplyr* {.build}
+## Subsetting data using *dplyr* {.smaller .build}
 
 + Think of subsetting rows and columns as two **separate different procedures**:
   - `select` columns are operations on variables, and 
@@ -363,9 +330,7 @@ cleanIris %>%
 
 
 
-## *dplyr* is much more!  {.build}
-
-+ `mutate` creates new columns
+## *dplyr*: `mutate` create new columns {.build}
 
 ```{r mutate}
 iris_mutated = mutate(cleanIris,
@@ -375,7 +340,7 @@ iris_mutated = mutate(cleanIris,
 iris_mutated
 ```
 
-+ `group_by` + `summarise` will create summary statistics for grouped variables
+## `group_by` + `summarise` will create summary statistics for grouped variables {.build}
 
 ```{r summarise}
 bySpecies = cleanIris %>%
@@ -387,7 +352,7 @@ bySpecies %>%
   summarise(meanSepalLength = mean(sepal_length))
 ```
 
-+ `left_join` for merging data
+## `left_join` for merging data {.build}
 
 ```{r left_join}
 flowers = data.frame(species = c("setosa", "versicolor", "virginica"),
@@ -400,9 +365,7 @@ iris_comments = left_join(cleanIris, flowers, by = "species")
 sample_n(iris_comments, 6) 
 ```
 
-## Checking if we cleaned the data properly {.build}
-
-+ `arrange` for ordering rows
+## `arrange` for ordering rows {.build}
 
 ```{r arrange}
 arrangeCleanIris = cleanIris %>% 
@@ -414,6 +377,7 @@ arrangeIris = iris %>%
   arrange(sepal_length, sepal_width, petal_length, petal_width)
 ```
 
+## Checking if we cleaned the data properly {.build}
 + We sorted both the processed `dirtyIris` data and the arranged `iris` data. 
 
 ```{r allequal}
@@ -427,34 +391,25 @@ arrangeIris = arrangeIris %>%
 all.equal(arrangeCleanIris, arrangeIris)
 ```
 
+## *dplyr* special select functions (advanced) {.smaller .build}
 
+<!-- + select only if certain string is present -->
 
-```{r identical}
-## identical is stronger version of all.equal
-## arrangeCleanIris is a tibble
-## but arrangeIris is a data.frame
-identical(arrangeCleanIris, arrangeIris) 
-class(arrangeCleanIris)
-class(arrangeIris)
+<!-- ```{r selectWith} -->
+<!-- cleanIris %>%  -->
+<!--   select(ends_with("length")) -->
 
-## Now, they are exactly the same!
-identical(arrangeCleanIris, arrangeIris %>% as.tibble)
-```
-
-
-## *dplyr* special select functions (advanced) {.build}
-
-+ select only if certain string is present
-
-```{r selectWith}
-cleanIris %>% 
-  select(ends_with("length"))
-
-cleanIris %>% 
-  select(starts_with("sepal"))
-```
+<!-- cleanIris %>%  -->
+<!--   select(starts_with("sepal")) -->
+<!-- ``` -->
 
 + select only if a column satisfy a certain condition
+
+```{r selectStart}
+cleanIris %>%
+  select(starts_with("sepal")) %>% 
+  top_n(3, sepal_width)
+```
 
 ```{r summariseIf}
 bySpecies %>%
@@ -474,14 +429,19 @@ learnggplot2()
 
 + Otherwise, please download and compile the "ggplot2_basic_tutorial.Rmd"  [here](https://github.com/kevinwang09/2017_STAT3914/blob/master/ggplot2_basic_tutorial.zip)
 
-+ If all fails, please send me an email at kevin.wang@sydney.edu.au.
-
-
++ If all fails, try https://gauss17gon.shinyapps.io/ggplot2_basic_tutorial or https://garthtarr.shinyapps.io/ggplot2_basic_tutorial
 
 ## *ggplot2*: the philosophy {.build}
 
-+ Di Cook - the real reason that you should use `ggplot2` is that, its design will force you to use a certain **grammar** when producing a plot. So much so, every plot you produce is actually a statistic. 
++ Di Cook - the real reason that you should use `ggplot2` is that, its design will force you to use a certain **grammar** when producing a plot. 
 
++ $\frac{1}{n}\sum_{i=1}^{n} X_i$ is a transformation of random variables, i.e., a statistic which provides insights into a data.
+
++ Similarly, ggplot is also a statistic, because we take components of the data and presented it in an informative way.
+
++ Publishing quality, rigourous syntax and design, flexible customisations, facetting. 
+
+## *ggplot* example 
 ```{r ggplotp1}
 library(ggplot2)
 p1 =
@@ -494,34 +454,24 @@ p1 =
 p1 
 ```
 
-
 # S7: Conclusion
-
-## tidy data, coding, modelling and reporting {.build}
+## tidy data, coding, modelling and reporting {.smaller .build}
 
 + `tidyverse` is a collection of 20+ packages built on the philosophy of being organised for the purpose of collaboration. 
 
 + These functions:
-    - They integrate against each other well.
-    - They are NOT ad-hoc programming solutions.
+    - Well designed programming and data science solutions.
     - They will always throw errors at you if you don't have a thorough understanding of your data.
+    - Capable for functional programming.
 
-## A gallery (optional) {.build}
-
-+ Interactive plotting from ggplot
-
-```{r ggplotly, fig.width=8, fig.height=8}
-plotly::ggplotly(p1)
-```
-
-+ A lot of new and powerful packages are being developed.
-
-<center><img src="sentiment.png" height="600"></center>
+<center><img src="sentiment.png" height="300"></center>
 
 
-+ Preview of next lecture: data visualisation on `gapminder`. http://edinbr.org/edinbr/2016/05/11/may-Hadley-Update2-PostingTalk.html
+## Preview of next lecture
 
-```{r, eval = F}
+http://edinbr.org/edinbr/2016/05/11/may-Hadley-Update2-PostingTalk.html
+
+```{r, echo = F, message = F, warning=F , fig.width=7, fig.height=5}
 library(gapminder)
 library(dplyr)
 library(purrr)
@@ -552,7 +502,7 @@ models <- models %>%
                 augment = model %>% map (broom::augment)
         )
 
-models %>%
+p2 = models %>%
         unnest(tidy) %>%
         select(continent, country, term, estimate, rsq) %>%
         spread(term, estimate) %>%
@@ -564,11 +514,26 @@ models %>%
                 ggtitle("LM on life exp. explained by time elapsed from 1950") +
                 scale_size_area(expression(R^2)) +
                 theme(legend.position = "bottom")
+
+p2
+```
+
+
+## Interactive plotting from ggplot
+
+```{r ggplotly, fig.width=6, fig.height=6, message = F, warning=F}
+library(plotly)
+ggplotly(p2)
 ```
 
 
 
 
+
+
+
+
+############
 <!--   -   e.g. reproducible cross validation in 7 lines. I wrote this in the worst notation possible on purpose. You shouldn't use this when doing your assignments. -->
 
 <!-- ```{r modelr} -->
@@ -625,34 +590,6 @@ models %>%
 <!--   ggtitle("Mean Miss-classifications in each iteration") -->
 <!-- ``` -->
 
-
-
-
-<!-- ```{r, eval = F, echo = F} -->
-<!-- library(ggimage) ## Extension of ggplot2 geoms -->
-<!-- library(gganimate) ## Make a series of ggplots into a GIF -->
-
-<!-- set.seed(10) -->
-
-<!-- df = tibble(time = 1:10) %>% -->
-<!--   mutate(x = map(.x = time, -->
-<!--                  .f = ~ rnorm(.x)), -->
-<!--          y = map(.x = time, -->
-<!--                  .f = ~ rnorm(.x))) -->
-
-<!-- df = df %>% unnest -->
-
-
-<!-- p = ggplot(df, aes(x = x, -->
-<!--                y = y, -->
-<!--                frame = time)) + -->
-<!--   geom_pokemon(aes(image = "pikachu")) + -->
-<!--   ggtitle("I have no idea what is going on") + -->
-<!--   theme_bw() -->
-
-<!-- gganimate(p, filename = "pikachu.gif") -->
-<!-- ``` -->
-
 ## Advice in the future {.build}
 
 + Use RStudio + RMarkdown to document your codes.
@@ -677,7 +614,7 @@ models %>%
 
 
 
-```{r}
-sessionInfo()
-```
+<!-- ```{r} -->
+<!-- sessionInfo() -->
+<!-- ``` -->
 

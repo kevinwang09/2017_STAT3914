@@ -6,8 +6,8 @@ author: |
 output: 
   learnr::tutorial:
     progressive: true
-    fig_height: 5
-    fig_width: 5
+    fig_height: 4
+    fig_width: 6
 runtime: shiny_prerendered
 ---
 
@@ -315,8 +315,10 @@ ggplot(iris,
 
 
 ## An example of poor design
-+ https://stackoverflow.com/questions/11467965/r-ggplot2-highlighting-selected-points-and-strange-behavior
 
++ A picture is not worth a thousand words. A well designed statistical plot can be. --- Kevin Wang
+
++ https://stackoverflow.com/questions/11467965/r-ggplot2-highlighting-selected-points-and-strange-behavior
 
 + There are several reasons as to why this plot is poor:
     - Missing legend for colours
@@ -683,6 +685,16 @@ gganimate::gganimate(p)
 ggplotly(p)
 ```
 
+
+
+# References
+
++ Again, `ggplot2` is so flexible that you cannot learn it from reading lecture notes. You must practise it! 
++ There is a very large ggplot2 user community. You should be able to just Google the problem you have and reach a solution on Stack Exchange fairly easily.
++ http://ggplot2.tidyverse.org/reference/
++ http://r4ds.had.co.nz/data-visualisation.html
++ https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
++ http://ggplot2.org/book/
 
 
 ## Session Info
