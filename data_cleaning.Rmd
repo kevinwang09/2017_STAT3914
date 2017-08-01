@@ -4,8 +4,8 @@ author: '[Kevin Y. X. Wang](http://www.maths.usyd.edu.au/ut/people?who=KY_Wang&s
 date: "31 July 2017"
 output:
   ioslides_presentation:
-    fig_height: 6
-    fig_width: 6
+    fig_height: 3
+    fig_width: 4
     incremental: yes
     self_contained: yes
     transition: faster
@@ -17,8 +17,12 @@ always_allow_html: yes
 library(ggplot2)
 library(dplyr)
 library(janitor)
-
-
+library(readr)
+library(tidyr)
+library(plotly)
+library(devtools)
+# library(learnr)
+library(gapminder)
 # opts_chunk$set(comment=NA, warning=FALSE, message=FALSE)
 
 
@@ -38,14 +42,18 @@ slides > slide:not(.nobackground):after {
 # S0: Prior to lecture
 
 ```{r constructDirtyIris, eval = F, echo = F}
+library(tidyverse)
 set.seed(10)
+
+
+
 dirtyIris = as.tbl(iris)
 dirtyIris = dirtyIris %>% 
-  add_row(Sepal.Length = sample(c(rnorm(1),NA), 100,replace = T), 
-          Sepal.Width = rep(NA, 100),
-          Petal.Length = rep(NA, 100),
-          Petal.Width = rep(NA, 100),
-          Species = rep(NA, 100)) %>% 
+  add_row(Sepal.Length = sample(c(rnorm(2),NA), 500, replace = T), 
+          Sepal.Width = sample(c(rnorm(2),NA), 500, replace = T),
+          Petal.Length = sample(c(rnorm(2),NA), 500, replace = T),
+          Petal.Width = sample(c(rnorm(2),NA), 500, replace = T),
+          Species = sample(levels(iris$Species), 500, replace = T)) %>% 
   cbind(allEmpty = NA) %>% 
   sample_n(size = nrow(.))
 
@@ -59,7 +67,7 @@ write_csv(dirtyIris, path = "dirtyIris.csv")
 
 ## Preparing for this lecture {.build}
 
-+ All materials are on: https://github.com/kevinwang09/2017_STAT3914
++ All materials are on Ed and https://github.com/kevinwang09/2017_STAT3914. 
 
 <!-- + Go and download this file: https://github.com/kevinwang09/2017_STAT3914/dirtyIris_excel.xlsx -->
 + Please run these codes on your laptop,
@@ -73,7 +81,7 @@ library(devtools)
 install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
 ```
 
-+ Familiar yourself with the `iris` dataset. Typing `iris` into `R` console should load this data. Pay attention to its column, row names and structure of each column. 
++ Familiar yourself with the `iris` dataset. Typing `iris` into `R` console should load this data. Pay attention to its column, row names, summary statistics and structure of each column. 
 
 
 
@@ -102,19 +110,86 @@ install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
 <center> <img src="data-science-explore.png" width="600" /> </center>
 
 + Assume we have data
-+ Assume we have questions, which the data can be used to answer
++ Assume we have data that can answer our questions
 + Assume we have cleaned data
 + Assume we interrogated the right aspects of the data using appropriate statistics
 + Assume we did everything right, communicate insights with others
+
+
+
+## Aim: effectively clean your data (1) {.build}
+
++ "Your statistical model is only ever going to be as good as your data quality" --- Kevin Wang.
+
++ There will be no recipe, there will be a lot of back and forth exploration.
+
++ Computational and visualisation tools. 
+
+<center> <img src="dirtyIris_screenshot.png" width="600" /> </center>
+
++ Corrupted column names, 100% missing column, 100% missing rows, rows with at least 1 missing value. 
+
++ Most severe problem: rows with random values. 
+
+```{r, echo = F, eval = F}
+library(tidyverse)
+library(e1071)
+library(pander)
+ddata = read_csv("dirtyIris.csv") %>% 
+  clean_names() %>% 
+  remove_empty_cols() %>% 
+  remove_empty_rows() %>% 
+  na.omit() 
+
+# d3heatmap::d3heatmap(ddata[,-5], colors = c("blue", "yellow","red"))
+
+trueIrisModel <- svm(x = iris[,1:4], y = iris$Species)
+table(predict(trueIrisModel, iris[,1:4]), iris$Species) %>% pander("True Iris Data")
+
+
+dirtyIrismodel <- svm(x = ddata[,1:4], y = as.factor(ddata$species))
+table(predict(dirtyIrismodel, ddata[,1:4]), ddata$species)%>% pander("Corrupted Iris Data")
+```
+
+## Aim: effectively clean your data (2) {.build}
+
++ The classical `iris` data is known to be well-separated. 
+
++ Running Support Vector Machine (SVM) classification algorithm on the cleaned `iris` data has very low number of classifications. 
+
++ True `iris` data
+
+--------------------------------------------------
+     &nbsp;       setosa   versicolor   virginica 
+---------------- -------- ------------ -----------
+   **setosa**       50         0            0     
+
+ **versicolor**     0          48           2     
+
+ **virginica**      0          2           48     
+--------------------------------------------------
+
+## Aim: effectively clean your data (3) {.build}
+
++ Not so much when you have corruptions.
+
++ In addition of introduce missing values, I also created non-sense rows in the data, they corrupted classification results.
+
+--------------------------------------------------
+     &nbsp;       setosa   versicolor   virginica 
+---------------- -------- ------------ -----------
+   **setosa**       89         25          27     
+
+ **versicolor**     0          47           4     
+
+ **virginica**      0          3           46     
+--------------------------------------------------
 
 
 ## Summary of this lecture {.build}
 
 <!-- + Powerful tools for data preparation. -->
 + Passive learning is not going to work.
-+ Our goal: clean the `dirtyIris` data to be exactly the same as the original `iris` data.
-
-<center> <img src="dirtyIris_screenshot.png" width="600" /> </center>
 
 + S1: Introduction
 + S2: Reading in data using `readr` and `readxl`
@@ -123,6 +198,8 @@ install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
 + S5: Data filtering using `dplyr`
 + S6: Data visualisation using `ggplot2`
 + S7: Conclusion
+
+
 
 
 #####################################################
@@ -236,22 +313,23 @@ glimpse(evenBetter)
 
 ```{r janitor3}
 evenBetterBetter = na.omit(evenBetter) 
-cleanIris = evenBetterBetter
+almostIris = evenBetterBetter
 ```
 
 ```{r janitor4}
-glimpse(cleanIris)
+glimpse(almostIris)
 glimpse(iris)
 ```
 #########################################
-# S4: Clean coding (skim through)
+
+# S4: Clean coding
 ## Coding complexity increases with the number of brackets {.smaller .build}
 
 + The "inside out" structure of coding isn't great for human reading.
 
 ```{r nestedBrackets, fig.width=4, fig.height=4}
-mean(cleanIris$sepal_length)
-plot(density(cleanIris$sepal_length), col = "red", lwd = 2)
+mean(almostIris$sepal_length)
+plot(density(almostIris$sepal_length), col = "red", lwd = 2)
 ```
 
 
@@ -262,17 +340,45 @@ plot(density(cleanIris$sepal_length), col = "red", lwd = 2)
 + Compounded operations are possible. Keyboard shortcut is Cmd+shift+M.
 
 ```{r piping, fig.width=4, fig.height=4}
-cleanIris$sepal_length %>% mean
+almostIris$sepal_length %>% mean
 
-cleanIris$sepal_length %>%
+almostIris$sepal_length %>%
   density %>%
   plot(col = "red", lwd = 2)
 ```
 
+
+## Using an informative variable (Sepal.Length) in `iris` to guide cleaning {.smaller .build}
+```{r}
+almostIris$sepal_length %>% 
+  sort %>% 
+  plot(col = "red", main = "almostIris is in red, true iris is in blue")
+
+iris$Sepal.Length %>%
+  sort %>% 
+  points(col = "blue")
+```
+
+
 # S5: `dplyr`: data subsetting master
 ## Traditional way of subsetting data in R (1) {.build}
 
-+ If I want the first two rows of column `sepal_length` and `sepal_width` in the `cleanIris` data:
++ If I want remove all observations with `sepal_length` less than 2:
+
+```{r cleanIris}
+cleanIris = almostIris[almostIris[, "sepal_length"] > 2, ]
+glimpse(cleanIris)
+```
+
++ We now have agreement over the size of the two data!
+
++ But this subsetting code is a bit cumbersome!
+
+## Traditional way of subsetting data in R (2) {.build}
+
++ Subsetting data in base R might not be the most concise solution.
+
++ Suppose we wish to extract first two rows of column `sepal_length` and `sepal_width` in the `cleanIris` data:
 
 ```{r basicSubsetting, eval = F}
 ## Assuming you know the position of column names.
@@ -290,8 +396,9 @@ cleanIris[1:2, c("sepal_length", "sepal_width")]
 ```
 
 
-## Traditional way of subsetting data in R (2) {.build}
-+ Something more realistic: we want to extract rows based on some compounded criteria and select columns based on special keywords.
+## Traditional way of subsetting data in R (3) {.build}
+
++ Even more complex subsetting: we want to extract rows based on some compounded criteria and select columns based on special keywords.
 
 ```{r BasicSubsetting2}
 cleanIris[(cleanIris[,"sepal_length"] < 5) &
@@ -330,41 +437,6 @@ cleanIris %>%
 
 
 
-## *dplyr*: `mutate` create new columns {.build}
-
-```{r mutate}
-iris_mutated = mutate(cleanIris,
-      newVar = sepal_length + petal_length,
-      newNewVar = newVar*2)
-
-iris_mutated
-```
-
-## `group_by` + `summarise` will create summary statistics for grouped variables {.build}
-
-```{r summarise}
-bySpecies = cleanIris %>%
-  group_by(species)
-
-bySpecies
-
-bySpecies %>%
-  summarise(meanSepalLength = mean(sepal_length))
-```
-
-## `left_join` for merging data {.build}
-
-```{r left_join}
-flowers = data.frame(species = c("setosa", "versicolor", "virginica"),
-                     comments = c("meh", "kinda_okay", "love_it!"))
-
-## cleanIris has the priority in this join operation
-iris_comments = left_join(cleanIris, flowers, by = "species")
-
-## Randomly sampling 6 rows 
-sample_n(iris_comments, 6) 
-```
-
 ## `arrange` for ordering rows {.build}
 
 ```{r arrange}
@@ -391,6 +463,45 @@ arrangeIris = arrangeIris %>%
 all.equal(arrangeCleanIris, arrangeIris)
 ```
 
+
+
+## Job done! 
+<center> <img src="feastCat.jpg" height="500"/> </center>
+
+## But what about the modelling?
++ Cleaned data is one thing, but again, we need to extract insights about the data.
++ This can be done via summary statistics, visualisation or running statistical models. 
++ "Your statistical insights is only going to be as good as the question you ask" --- Kevin Wang.
+
+## *dplyr*: `mutate` create new columns {.build}
+
+```{r, eval = F, echo = F}
+prcomp(iris[,-5]) %>% ggbiplot::ggbiplot(choices = c(1:2),groups = iris$Species)
+prcomp(cleanIris[,-5])$rotation
+```
+
+```{r mutate}
+iris_mutated = mutate(cleanIris,
+      V1 = sepal_length - sepal_width,
+      V2 = V1 + sepal_width,
+      )
+
+iris_mutated
+```
+
+
+## `group_by` + `summarise` will create summary statistics for grouped variables {.build}
+
+```{r summarise}
+bySpecies = cleanIris %>%
+  group_by(species)
+
+bySpecies
+
+bySpecies %>%
+  summarise(meanSepalLength = mean(sepal_length))
+```
+
 ## *dplyr* special select functions (advanced) {.smaller .build}
 
 <!-- + select only if certain string is present -->
@@ -403,13 +514,7 @@ all.equal(arrangeCleanIris, arrangeIris)
 <!--   select(starts_with("sepal")) -->
 <!-- ``` -->
 
-+ select only if a column satisfy a certain condition
-
-```{r selectStart}
-cleanIris %>%
-  select(starts_with("sepal")) %>% 
-  top_n(3, sepal_width)
-```
++ `select` only if a column satisfy a certain condition
 
 ```{r summariseIf}
 bySpecies %>%
@@ -417,7 +522,64 @@ bySpecies %>%
                funs(m = mean))
 ```
 
+```{r selectStart}
+cleanIris %>%
+  select(starts_with("sepal")) %>% 
+  top_n(3, sepal_width)
+```
+
+
+## `left_join` for merging data {.build}
+
+```{r left_join}
+flowers = data.frame(species = c("setosa", "versicolor", "virginica"),
+                     comments = c("meh", "kinda_okay", "love_it!"))
+
+## cleanIris has the priority in this join operation
+iris_comments = left_join(cleanIris, flowers, by = "species")
+
+## Randomly sampling 6 rows 
+sample_n(iris_comments, 6) 
+```
+
+
+
+
 # S6: `ggplot2`: the best visualisation package
+
+## *ggplot2*: the philosophy {.build}
+
++ Di Cook - the real reason that you should use `ggplot2` is that, its design will force you to use a certain **grammar** when producing a plot. 
+
++ $\frac{1}{n}\sum_{i=1}^{n} X_i$ is a transformation of random variables, i.e., a statistic which provides insights into a data.
+
++ Similarly, ggplot is also a statistic, because we take components of the data and presented it in an informative way.
+
++ Publishing quality, rigourous syntax and design, flexible customisations, facetting. 
+
+
+
+## Best variables to separating clusters (1){.smaller}
+
+```{r, fig.width=6, fig.height=4}
+ggplot(cleanIris, 
+       aes(x = petal_length, 
+           y = petal_width,
+           colour = species)) +
+  geom_point(size = 3)
+```
+
+## Best variables to separating clusters (2){.smaller}
+
+```{r, fig.width=6, fig.height=4}
+ggplot(cleanIris, 
+       aes(x = petal_length, 
+           y = sepal_length,
+           colour = species)) +
+  geom_point(size = 3)
+```
+
+
 ## *ggplot2* tutorial sheet {.build}
 
 + If you managed to install all packages successfully, you should be able to run the following to get an interactive tutorial sheet. 
@@ -431,28 +593,7 @@ learnggplot2()
 
 + If all fails, try https://gauss17gon.shinyapps.io/ggplot2_basic_tutorial or https://garthtarr.shinyapps.io/ggplot2_basic_tutorial
 
-## *ggplot2*: the philosophy {.build}
 
-+ Di Cook - the real reason that you should use `ggplot2` is that, its design will force you to use a certain **grammar** when producing a plot. 
-
-+ $\frac{1}{n}\sum_{i=1}^{n} X_i$ is a transformation of random variables, i.e., a statistic which provides insights into a data.
-
-+ Similarly, ggplot is also a statistic, because we take components of the data and presented it in an informative way.
-
-+ Publishing quality, rigourous syntax and design, flexible customisations, facetting. 
-
-## *ggplot* example 
-```{r ggplotp1}
-library(ggplot2)
-p1 =
-  iris %>%
-  ggplot(aes(x = Sepal.Length,
-             y = Sepal.Width,
-             colour = Species)) +
-  geom_point(size = 3)
-
-p1 
-```
 
 # S7: Conclusion
 ## tidy data, coding, modelling and reporting {.smaller .build}
