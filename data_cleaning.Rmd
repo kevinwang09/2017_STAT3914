@@ -589,7 +589,7 @@ library(learnr3914)
 learnggplot2()
 ```
 
-+ Otherwise, please download and compile the "ggplot2_basic_tutorial.Rmd"  [here](https://github.com/kevinwang09/2017_STAT3914/blob/master/ggplot2_basic_tutorial.zip)
++ Otherwise, please download and compile the "ggplot2_basic_tutorial.Rmd" from Ed or [here](https://github.com/kevinwang09/2017_STAT3914/blob/master/ggplot2_basic_tutorial.zip)
 
 + If all fails, try https://gauss17gon.shinyapps.io/ggplot2_basic_tutorial or https://garthtarr.shinyapps.io/ggplot2_basic_tutorial
 
