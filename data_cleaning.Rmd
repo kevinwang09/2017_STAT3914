@@ -75,7 +75,7 @@ write_csv(dirtyIris, path = "dirtyIris.csv")
 ```{r, eval = F}
 ## Might be a while...
 install.packages(c("ggplot2","dplyr", "readr","tidyr","janitor","plotly",
-                   "devtools","learnr","gapminder")) 
+                   "devtools","learnr","gapminder", "e1071")) 
 
 library(devtools)
 install_github("kevinwang09/2017_STAT3914", subdir = "learnr3914")
@@ -562,7 +562,7 @@ library(e1071)
 irisSvm = svm(x = cleanIris %>% select(contains("length")), 
               y = cleanIris$species %>% as.factor)
 irisSvmPlotdf = data.frame(cleanIris, svmPred = irisSvm$fitted)
-pander::pander(table(irisSvmPlotdf$species, irisSvmPlotdf$svmPred))
+pander::pander(table(truth = irisSvmPlotdf$species, pred = irisSvmPlotdf$svmPred))
 ```
 
 ## Why do we visualise? (2){.build}
@@ -572,7 +572,7 @@ ggplot(irisSvmPlotdf,
        aes(x = petal_length,
            y = sepal_length,
            colour = petal_width)) +
-  facet_grid(species~svmPred) +
+  facet_grid(species~svmPred, labeller = label_both) +
   geom_point(size = 5) +
   scale_color_distiller(palette = "Spectral") +
   # scale_shape_discrete("True Species", solid = F) +

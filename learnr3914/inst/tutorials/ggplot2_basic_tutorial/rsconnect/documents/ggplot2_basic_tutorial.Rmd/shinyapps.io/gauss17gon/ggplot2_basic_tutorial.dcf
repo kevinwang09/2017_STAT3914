@@ -1,10 +1,10 @@
 name: ggplot2_basic_tutorial
-title: ggplot2_basic_tutorial
+title:
 account: gauss17gon
 server: shinyapps.io
 appId: 193098
-bundleId: 921527
+bundleId: 924683
 url: https://gauss17gon.shinyapps.io/ggplot2_basic_tutorial/
-when: 1501485704.61396
+when: 1501684131.66126
 asMultiple: FALSE
 asStatic: FALSE
