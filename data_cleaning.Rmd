@@ -483,7 +483,7 @@ prcomp(cleanIris[,-5])$rotation
 ```{r mutate}
 iris_mutated = mutate(cleanIris,
       V1 = sepal_length - sepal_width,
-      V2 = V1 + sepal_width,
+      V2 = V1 + sepal_width
       )
 
 iris_mutated
@@ -547,6 +547,40 @@ sample_n(iris_comments, 6)
 
 # S6: `ggplot2`: the best visualisation package
 
+
+## Why do we visualise? (1){.build}
+
++ `datasaurus`: all statistics describe the data in some limited ways. 
+
++ Plots usually give more dimensions to our analysis. 
+
++ Suppose in our `cleanIris` data, we will use `sepal_length` and `petal_length` as SVM predictors for the classes of iris flowers. 
+
+```{r, echo = F}
+library(e1071)
+
+irisSvm = svm(x = cleanIris %>% select(contains("length")), 
+              y = cleanIris$species %>% as.factor)
+irisSvmPlotdf = data.frame(cleanIris, svmPred = irisSvm$fitted)
+pander::pander(table(irisSvmPlotdf$species, irisSvmPlotdf$svmPred))
+```
+
+## Why do we visualise? (2){.build}
+
+```{r, echo = F, fig.height = 5.5, fig.width = 8}
+ggplot(irisSvmPlotdf,
+       aes(x = petal_length,
+           y = sepal_length,
+           colour = petal_width)) +
+  facet_grid(species~svmPred) +
+  geom_point(size = 5) +
+  scale_color_distiller(palette = "Spectral") +
+  # scale_shape_discrete("True Species", solid = F) +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+```
+
+
 ## *ggplot2*: the philosophy {.build}
 
 + Di Cook - the real reason that you should use `ggplot2` is that, its design will force you to use a certain **grammar** when producing a plot. 
@@ -559,25 +593,70 @@ sample_n(iris_comments, 6)
 
 
 
-## Best variables to separating clusters (1){.smaller}
+<!-- ## Visualising clustering results {.smaller} -->
 
-```{r, fig.width=6, fig.height=4}
-ggplot(cleanIris, 
-       aes(x = petal_length, 
-           y = petal_width,
-           colour = species)) +
-  geom_point(size = 3)
-```
+<!-- ```{r, fig.width=6, fig.height=4} -->
+<!-- ggplot(cleanIris,  -->
+<!--        aes(x = petal_length,  -->
+<!--            y = petal_width, -->
+<!--            colour = species)) + -->
+<!--   geom_point(size = 3) -->
+<!-- ``` -->
 
-## Best variables to separating clusters (2){.smaller}
+<!-- ## Best variables to separating clusters (2){.smaller} -->
 
-```{r, fig.width=6, fig.height=4}
-ggplot(cleanIris, 
-       aes(x = petal_length, 
-           y = sepal_length,
-           colour = species)) +
-  geom_point(size = 3)
-```
+<!-- ```{r, fig.width=6, fig.height=4} -->
+<!-- ggplot(cleanIris,  -->
+<!--        aes(x = petal_length,  -->
+<!--            y = sepal_length, -->
+<!--            colour = species)) + -->
+<!--   geom_point(size = 3) -->
+<!-- ``` -->
+
+
+<!-- ```{r, eval = F, echo = F} -->
+<!-- library(cluster) -->
+<!-- irisPam = pam(x = cleanIris[,-5], k = 3)$cluster %>% as.factor() -->
+<!-- irisPamPlotdf = cbind(cleanIris, irisPam) -->
+
+<!-- ggplot(irisPamPlotdf, -->
+<!--        aes(x = petal_length, -->
+<!--            y = sepal_length, -->
+<!--            colour = irisPam, -->
+<!--            shape = species)) + -->
+<!--   geom_point(size = 5, stroke = 1) + -->
+<!--   scale_shape_discrete(solid = F) -->
+
+<!-- irisPca = prcomp(cleanIris[,-5],scale. = T)$x -->
+<!-- irisPcaPam = pam(x = irisPca, k = 3)$cluster %>% as.factor() -->
+<!-- irisPcaPamPlotdf = data.frame(PC1 = irisPca[,1], -->
+<!--                               PC2 = irisPca[,2], -->
+<!--                               species = cleanIris$species, -->
+<!--                               irisPcaPam) -->
+
+<!-- ggplot(irisPcaPamPlotdf, -->
+<!--        aes(x = PC1, -->
+<!--            y = PC2, -->
+<!--            colour = irisPcaPam, -->
+<!--            shape = species)) + -->
+<!--   geom_point(size = 5, stroke = 1) + -->
+<!--   scale_shape_discrete(solid = F) -->
+<!-- ################## -->
+<!-- library(e1071) -->
+
+<!-- irisSvm = svm(x = cleanIris[,1:4], y = cleanIris$species %>% as.factor) -->
+<!-- irisSvmPlotdf = data.frame(cleanIris, svmPred = irisSvm$fitted) -->
+
+<!-- ggplot(irisSvmPlotdf, -->
+<!--        aes(x = petal_length, -->
+<!--            y = sepal_length, -->
+<!--            colour = svmPred, -->
+<!--            shape = species)) + -->
+<!--   geom_point(size = 5, stroke = 1) + -->
+<!--   scale_color_brewer("Predicted Species", palette = "Set1") + -->
+<!--   scale_shape_discrete("True Species", solid = F) + -->
+<!--   theme(legend.position = "bottom") -->
+<!-- ``` -->
 
 
 ## *ggplot2* tutorial sheet {.build}
@@ -608,7 +687,7 @@ learnggplot2()
 <center><img src="sentiment.png" height="300"></center>
 
 
-## Preview of next lecture
+## Peek at the *tidyverse*
 
 http://edinbr.org/edinbr/2016/05/11/may-Hadley-Update2-PostingTalk.html
 
@@ -666,12 +745,6 @@ p2
 library(plotly)
 ggplotly(p2)
 ```
-
-
-
-
-
-
 
 
 ############
