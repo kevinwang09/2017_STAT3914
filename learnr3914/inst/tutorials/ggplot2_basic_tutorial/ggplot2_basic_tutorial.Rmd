@@ -27,6 +27,7 @@ library(ggthemes)
 library(tidyr)
 library(ggrepel)
 library(plotly)
+library(scales)
 
 
 
@@ -678,10 +679,11 @@ p = ggplot(gapminder,
        aes(x = gdpPercap, 
            y = lifeExp, 
            size = pop, 
+           label = country,
            colour = continent, 
            frame = year)) +
   geom_point() +
-  scale_x_log10() + 
+  scale_x_log10(labels = scales::comma) + 
   scale_color_brewer(palette = "Set1") + 
   theme_bw() +
   theme(legend.position = "bottom") 

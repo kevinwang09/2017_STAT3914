@@ -17,4 +17,5 @@ Imports:
     ggthemes,
     tidyr,
     ggrepel, 
-    plotly
+    plotly,
+    scales
